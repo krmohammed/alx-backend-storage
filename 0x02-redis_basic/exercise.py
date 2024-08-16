@@ -37,6 +37,26 @@ def call_history(method: Callable) -> Callable:
     return wrapper
 
 
+def replay(method: Callable) -> Callable:
+    """replay method"""
+    r_inst = method.__self__._redis
+    key = method.__qualname__
+
+    inputs_key = f"{key}:inputs"
+    outputs_key = f"{key}:outputs"
+
+    inputs = r_inst.lrange(inputs_key, 0, -1)
+    outputs = r_inst.lrange(outputs_key, 0, -1)
+
+    print("{} was called {} times".format(method.__qualname__, len(inputs)))
+    for input, output in zip(inputs, outputs):
+        print(
+            "{}(*{}) -> {}".format(
+                method.__qualname__, input.decode("utf-8"), output.decode("utf-8")
+            )
+        )
+
+
 class Cache:
     """Cache class"""
 
@@ -44,8 +64,8 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-    @count_calls
     @call_history
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """store method"""
         r_key = str(uuid.uuid4())

@@ -48,7 +48,7 @@ def replay(method: Callable) -> Callable:
     inputs = r_inst.lrange(inputs_key, 0, -1)
     outputs = r_inst.lrange(outputs_key, 0, -1)
 
-    print("{} was called {} times".format(method.__qualname__, len(inputs)))
+    print("{} was called {} times:".format(method.__qualname__, len(inputs)))
     for input, output in zip(inputs, outputs):
         print(
             "{}(*{}) -> {}".format(
